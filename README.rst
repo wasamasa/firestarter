@@ -45,7 +45,7 @@ Use a hook for limiting the default to certain major modes:
 
     (define my-customize-firestarter ()
       (setq firestarter value))
-    (add-hook ''my-mode-hook 'my-customize-firestarter')
+    (add-hook 'my-mode-hook 'my-customize-firestarter)
 
 Project-specific values belong to a directory-local variable.  ``M-x
 add-dir-local-variable`` is useful to create or extend the appropriate

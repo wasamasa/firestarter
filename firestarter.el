@@ -71,7 +71,8 @@ t, 'finished: Report after either outcome once the subprocess quit."
   :group 'firestarter)
 
 (defvar firestarter-type nil
-  "Current shell command reporting type.")
+  "Current shell command reporting type.
+See `firestarter-default-type' for valid values.")
 (make-variable-buffer-local 'firestarter-type)
 
 (defvar firestarter-process nil

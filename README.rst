@@ -194,3 +194,6 @@ convinced me:
   surely does something, but doesn't even have a proper README
 - ``M-x compile`` is shell-command only and pretty weird, but at least
   looks pretty
+- `auto-recompile <https://github.com/tuhdo/auto-recompile>`_ does
+  away with the most glaring problem of ``M-x compile``, not being
+  re-run on save, but shares its other issues

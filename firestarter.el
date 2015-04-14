@@ -160,15 +160,17 @@ buffer, a buffer-local string however is no problem."
   "Special process sentinel.
 It retrieves the status of PROCESS, then sets up and displays the
 reporting buffer according to `firestarter-type'."
-  (unless (or (eq firestarter-type 'silent) (not firestarter-type))
-    (let ((status (process-status process)))
-      (when (eq status 'exit)
-        (let ((return-code (process-exit-status process)))
-          (firestarter-setup-buffer process return-code)
-          (when (or (and (eq firestarter-type 'success) (= return-code 0))
-                    (and (eq firestarter-type 'failure) (/= return-code 0))
-                    (memq firestarter-type '(finished t)))
-            (display-buffer "*firestarter*")))))))
+  (let ((buffer (process-get process 'buffer)))
+    (with-current-buffer buffer
+      (unless (or (eq firestarter-type 'silent) (not firestarter-type))
+        (let ((status (process-status process)))
+          (when (eq status 'exit)
+            (let ((return-code (process-exit-status process)))
+              (firestarter-setup-buffer process return-code)
+              (when (or (and (eq firestarter-type 'success) (= return-code 0))
+                        (and (eq firestarter-type 'failure) (/= return-code 0))
+                        (memq firestarter-type '(finished t)))
+                (display-buffer "*firestarter*")))))))))
 
 (defun firestarter-setup-buffer (process return-code)
   "Setup the reporting buffer.

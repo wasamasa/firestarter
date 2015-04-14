@@ -83,6 +83,12 @@ See `firestarter-default-type' for valid values.")
   "Output associated with `firestarter-process'.")
 (make-variable-buffer-local 'firestarter-process-output)
 
+(defvar firestarter-process-busy nil
+  "Non-nil if `firestarter-process' is still running.
+When nil, `firestarter-process' either wasn't started yet or did
+quit already.")
+(make-variable-buffer-local 'firestarter-process-busy)
+
 (defcustom firestarter-buffer-name "*firestarter*"
   "Buffer name of the reporting buffer for shell commands."
   :type 'string
@@ -92,21 +98,24 @@ See `firestarter-default-type' for valid values.")
   "Execute COMMAND in a shell.
 Optionally, override the reporting type as documented in
 `firestarter-default-type' with TYPE."
-  (setq firestarter-process
-        (start-process "firestarter" nil
-                       shell-file-name shell-command-switch
-                       (firestarter-format command)))
-  (setq firestarter-process-output "")
-  ;; if type is given, override firestarter-type, otherwise set it to
-  ;; the default if it's unset
-  (setq firestarter-type
-        (or type firestarter-type firestarter-default-type))
-  ;; KLUDGE process output filters aren't run with the buffer they
-  ;; originate from selected, that's why the buffer associated with
-  ;; the process is stored in a process property
-  (process-put firestarter-process 'buffer (current-buffer))
-  (set-process-filter firestarter-process 'firestarter-filter)
-  (set-process-sentinel firestarter-process 'firestarter-sentinel))
+  (if firestarter-process-busy
+      (error "Process already running")
+    (setq firestarter-process
+          (start-process "firestarter" nil
+                         shell-file-name shell-command-switch
+                         (firestarter-format command)))
+    (setq firestarter-process-output ""
+          firestarter-process-busy t)
+    ;; if type is given, override firestarter-type, otherwise set it to
+    ;; the default if it's unset
+    (setq firestarter-type
+          (or type firestarter-type firestarter-default-type))
+    ;; KLUDGE process output filters aren't run with the buffer they
+    ;; originate from selected, that's why the buffer associated with
+    ;; the process is stored in a process property
+    (process-put firestarter-process 'buffer (current-buffer))
+    (set-process-filter firestarter-process 'firestarter-filter)
+    (set-process-sentinel firestarter-process 'firestarter-sentinel)))
 
 (defun firestarter-format (string)
   "Apply format codes on STRING.
@@ -165,6 +174,7 @@ reporting buffer according to `firestarter-type'."
       (unless (or (eq firestarter-type 'silent) (not firestarter-type))
         (let ((status (process-status process)))
           (when (eq status 'exit)
+            (setq firestarter-process-busy nil)
             (let ((return-code (process-exit-status process)))
               (firestarter-setup-buffer process return-code)
               (when (or (and (eq firestarter-type 'success) (= return-code 0))

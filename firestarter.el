@@ -173,7 +173,7 @@ reporting buffer according to `firestarter-type'."
     (with-current-buffer buffer
       (unless (or (eq firestarter-type 'silent) (not firestarter-type))
         (let ((status (process-status process)))
-          (when (eq status 'exit)
+          (when (memq status '(exit signal))
             (setq firestarter-process-busy nil)
             (let ((return-code (process-exit-status process)))
               (firestarter-setup-buffer process return-code)

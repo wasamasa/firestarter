@@ -49,12 +49,29 @@ Use a hook for limiting the default to certain major modes:
 
 Project-specific values belong to a directory-local variable.  ``M-x
 add-dir-local-variable`` is useful to create or extend the appropriate
-file interactively.
+file interactively.  The resulting ``.dir-locals.el`` file should look
+like this:
 
-File-specific values are set up with a file-local variable.  Both
-``M-x add-file-local-variable`` (adds the variable in the footer) and
-``M-x add-file-local-variable-prop-line`` (adds the variable in the
-header) work.
+.. code:: elisp
+
+    ((nil . ((firestarter . value))))
+
+
+File-specific values are set up with a file-local variable.  Using
+``M-x add-file-local-variable`` will result in the following footer:
+
+.. code:: elisp
+
+    ;; Local Variables:
+    ;; firestarter: value
+    ;; End:
+
+If you prefer the shorter variant using the header, ``M-x
+add-file-local-variable-prop-line`` will result in:
+
+.. code:: elisp
+
+    ;; -*- firestarter: value; -*-
 
 To reapply directory-local and file-local variables, either use ``M-x
 normal-mode`` (doesn't reload file from disk), ``M-x revert-buffer``

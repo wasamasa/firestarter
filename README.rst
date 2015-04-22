@@ -79,6 +79,14 @@ normal-mode`` (doesn't reload file from disk), ``M-x revert-buffer``
 (reloads file from disk), entering the corresponding major mode of
 your file or changing major modes.
 
+---
+
+To run the command interactively (instead on the next save), use ``M-x
+firestarter``.  If a command has become stuck, you can either
+terminate it outside of Emacs (with a command like ``pkill`` or
+``htop``) or inside Emacs with ``M-x firestarter-abort`` for the
+current buffer.
+
 In case you dislike confirming file-local variables manually or
 whitelisting them on a case-by-case basis and are willing to take the
 security risks, you can whitelist all instances of ``firestarter`` by

@@ -80,9 +80,9 @@ normal-mode`` (doesn't reload file from disk), ``M-x revert-buffer``
 your file or changing major modes.
 
 In case you dislike confirming file-local variables manually or
-whitelisting them on a case-by-case basis, you can whitelist all
-instances of ``firestarter`` by putting the following in your init
-file:
+whitelisting them on a case-by-case basis and are willing to take the
+security risks, you can whitelist all instances of ``firestarter`` by
+putting the following in your init file:
 
 .. code:: elisp
 

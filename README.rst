@@ -16,8 +16,9 @@ states.
 Installation
 ------------
 
-Install from `Marmalade <https://marmalade-repo.org/>`_ with ``M-x
-package-install RET firestarter RET``.
+Install from `Marmalade <https://marmalade-repo.org/>`_ or `MELPA
+(Stable) <http://melpa.org/>`_ with ``M-x package-install RET
+firestarter RET``.
 
 Usage
 -----

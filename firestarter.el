@@ -222,6 +222,12 @@ would invalidate the corresponding process attribute."
       (when firestarter-process
         (process-put firestarter-process 'buffer buffer)))))
 
+(defun firestarter-abort ()
+  "Abort the currently active firestarter process."
+  (interactive)
+  (when firestarter-process
+    (delete-process firestarter-process)))
+
 ;;;###autoload
 (define-minor-mode firestarter-mode
   "Toggle `firestarter-mode'.

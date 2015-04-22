@@ -202,6 +202,7 @@ output and incorporate RETURN-CODE into the report."
 (defun firestarter ()
   "Hook function run after save.
 It dispatches upon the value type of `firestarter'."
+  (interactive)
   (when firestarter
     (cond
      ((stringp firestarter)

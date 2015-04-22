@@ -171,10 +171,10 @@ It retrieves the status of PROCESS, then sets up and displays the
 reporting buffer according to `firestarter-type'."
   (let ((buffer (process-get process 'buffer)))
     (with-current-buffer buffer
-      (unless (or (eq firestarter-type 'silent) (not firestarter-type))
-        (let ((status (process-status process)))
-          (when (memq status '(exit signal))
-            (setq firestarter-process-busy nil)
+      (let ((status (process-status process)))
+        (when (memq status '(exit signal))
+          (setq firestarter-process-busy nil)
+          (unless (or (eq firestarter-type 'silent) (not firestarter-type))
             (let ((return-code (process-exit-status process)))
               (firestarter-setup-buffer process return-code)
               (when (or (and (eq firestarter-type 'success) (= return-code 0))

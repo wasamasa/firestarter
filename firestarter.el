@@ -83,12 +83,6 @@ See `firestarter-default-type' for valid values.")
   "Output associated with `firestarter-process'.")
 (make-variable-buffer-local 'firestarter-process-output)
 
-(defvar firestarter-process-busy nil
-  "Non-nil if `firestarter-process' is still running.
-When nil, `firestarter-process' either wasn't started yet or did
-quit already.")
-(make-variable-buffer-local 'firestarter-process-busy)
-
 (defcustom firestarter-buffer-name "*firestarter*"
   "Buffer name of the reporting buffer for shell commands."
   :type 'string
@@ -98,14 +92,15 @@ quit already.")
   "Execute COMMAND in a shell.
 Optionally, override the reporting type as documented in
 `firestarter-default-type' with TYPE."
-  (if firestarter-process-busy
+  (if (and firestarter-process
+           (not (memq (process-status firestarter-process)
+                      '(exit signal nil))))
       (error "Process already running")
     (setq firestarter-process
           (start-process "firestarter" nil
                          shell-file-name shell-command-switch
                          (firestarter-format command)))
-    (setq firestarter-process-output ""
-          firestarter-process-busy t)
+    (setq firestarter-process-output "")
     ;; if type is given, override firestarter-type, otherwise set it to
     ;; the default if it's unset
     (setq firestarter-type
@@ -171,16 +166,14 @@ It retrieves the status of PROCESS, then sets up and displays the
 reporting buffer according to `firestarter-type'."
   (let ((buffer (process-get process 'buffer)))
     (with-current-buffer buffer
-      (let ((status (process-status process)))
-        (when (memq status '(exit signal))
-          (setq firestarter-process-busy nil)
-          (unless (or (eq firestarter-type 'silent) (not firestarter-type))
-            (let ((return-code (process-exit-status process)))
-              (firestarter-setup-buffer process return-code)
-              (when (or (and (eq firestarter-type 'success) (= return-code 0))
-                        (and (eq firestarter-type 'failure) (/= return-code 0))
-                        (memq firestarter-type '(finished t)))
-                (display-buffer "*firestarter*")))))))))
+      (when (memq (process-status process) '(exit signal nil))
+        (unless (or (eq firestarter-type 'silent) (not firestarter-type))
+          (let ((return-code (process-exit-status process)))
+            (firestarter-setup-buffer process return-code)
+            (when (or (and (eq firestarter-type 'success) (= return-code 0))
+                      (and (eq firestarter-type 'failure) (/= return-code 0))
+                      (memq firestarter-type '(finished t)))
+              (display-buffer "*firestarter*"))))))))
 
 (defun firestarter-setup-buffer (process return-code)
   "Setup the reporting buffer.

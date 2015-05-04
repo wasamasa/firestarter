@@ -207,7 +207,7 @@ It dispatches upon the value type of `firestarter'."
     (cond
      ((stringp firestarter)
       (firestarter-command firestarter))
-     ((symbolp firestarter)
+     ((functionp firestarter)
       (call-interactively firestarter))
      ((listp firestarter)
       (eval firestarter))

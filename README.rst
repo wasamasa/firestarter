@@ -79,7 +79,7 @@ normal-mode`` (doesn't reload file from disk), ``M-x revert-buffer``
 (reloads file from disk), entering the corresponding major mode of
 your file or changing major modes.
 
----
+----
 
 To run the command interactively (instead on the next save), use ``M-x
 firestarter``.  If a command has become stuck, you can either

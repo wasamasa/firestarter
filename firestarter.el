@@ -141,11 +141,12 @@ Available format codes are:
  string."
   (let* ((buffer (buffer-name))
          (path (or (buffer-file-name) ""))
+         (directory (file-name-directory (or path "")))
          (file (file-name-nondirectory (or path "")))
          (stem (file-name-sans-extension file))
          (extension (file-name-extension file t)))
-    (format-spec string (format-spec-make ?b buffer ?p path ?f file
-                                          ?s stem ?e extension))))
+    (format-spec string (format-spec-make ?b buffer ?p path ?d directory
+                                          ?f file ?s stem ?e extension))))
 
 (defun firestarter-filter (process output)
   "Special process filter.

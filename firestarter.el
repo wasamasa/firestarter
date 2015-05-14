@@ -207,14 +207,9 @@ It dispatches upon the value type of `firestarter'."
       (eval firestarter))
      (t (error "Invalid value for `firestarter': %s" firestarter)))))
 
-(defun firestarter-update-processes ()
-  "Hook function for updating the process->buffer associations.
-It is run to accomodate for the case of buffer renaming which
-would invalidate the corresponding process attribute."
-  (dolist (buffer (buffer-list))
-    (with-current-buffer buffer
-      (when firestarter-process
-        (process-put firestarter-process 'buffer buffer)))))
+(defadvice rename-buffer (after update-firestarter-process activate)
+  (when firestarter-process
+    (process-put firestarter-process 'buffer (buffer-name))))
 
 (defun firestarter-abort ()
   "Abort the currently active firestarter process."
@@ -230,11 +225,8 @@ When activated, run a command as specified in the buffer-local
   :lighter firestarter-lighter
   :global t
   (if firestarter-mode
-      (progn
-        (add-hook 'after-save-hook 'firestarter)
-        (add-hook 'buffer-list-update-hook 'firestarter-update-processes))
-    (remove-hook 'after-save-hook 'firestarter)
-    (remove-hook 'buffer-list-update-hook 'firestarter-update-processes)))
+      (add-hook 'after-save-hook 'firestarter)
+    (remove-hook 'after-save-hook 'firestarter)))
 
 (provide 'firestarter)
 ;;; firestarter.el ends here

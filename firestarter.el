@@ -139,12 +139,12 @@ Available format codes are:
  Equals the file name without its stem.  Includes the period if
  an extension is present, otherwise the value is an empty
  string."
-  (let* ((buffer (buffer-name))
-         (path (or (buffer-file-name) ""))
-         (directory (file-name-directory (or path "")))
-         (file (file-name-nondirectory (or path "")))
-         (stem (file-name-sans-extension file))
-         (extension (file-name-extension file t)))
+  (let* ((buffer (shell-quote-argument (buffer-name)))
+         (path (shell-quote-argument (or (buffer-file-name) "")))
+         (directory (shell-quote-argument (file-name-directory (or path ""))))
+         (file (shell-quote-argument (file-name-nondirectory (or path ""))))
+         (stem (shell-quote-argument (file-name-sans-extension file)))
+         (extension (shell-quote-argument (file-name-extension file t))))
     (format-spec string (format-spec-make ?b buffer ?p path ?d directory
                                           ?f file ?s stem ?e extension))))
 

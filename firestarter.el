@@ -84,6 +84,14 @@ See `firestarter-default-type' for valid values.")
   :type 'string
   :group 'firestarter)
 
+(defcustom firestarter-reporting-functions '(firestarter-report-to-buffer)
+  "Abnormal hook run after process termination.
+The process is used as argument.  See
+`firestarter-report-to-buffer' for the default value and as
+example for writing your own reporting function."
+  :type 'hook
+  :group 'firestarter)
+
 (defun firestarter-command (command &optional type)
   "Execute COMMAND in a shell.
 Optionally, override the reporting type as documented in
@@ -149,36 +157,34 @@ Appends OUTPUT to the process output property."
   "Special process sentinel.
 It retrieves the status of PROCESS, then sets up and displays the
 reporting buffer according to the reporting type."
-  (let ((type (process-get process 'type)))
-    (when (memq (process-status process) '(exit signal nil))
-      (unless (memq type '(silent nil))
-        (let ((return-code (process-exit-status process)))
-          (firestarter-setup-reporting-buffer process)
-          (when (or (and (eq type 'success) (= return-code 0))
-                    (and (eq type 'failure) (/= return-code 0))
-                    (memq type '(finished t)))
-            (display-buffer firestarter-buffer-name)))))))
+  (when (memq (process-status process) '(exit signal nil))
+    (run-hook-with-args 'firestarter-reporting-functions process)))
 
-(defun firestarter-setup-reporting-buffer (process)
-  "Setup the reporting buffer.
-Retrieve the associated buffer for PROCESS, then format its
-output and incorporate RETURN-CODE into the report."
-  (let ((buffer-name (process-get process 'buffer-name))
-        (target (get-buffer-create firestarter-buffer-name))
-        (return-code (process-exit-status process))
-        (output (process-get process 'output)))
-    (with-current-buffer target
-      (let ((inhibit-read-only t))
-        (view-mode)
-        (goto-char (point-max))
-        (insert (propertize
-                 (format "%s (%d):" buffer-name return-code)
-                 'face 'highlight)
-                "\n\n"
-                output
-                "\n"
-                (propertize "---" 'face 'shadow)
-                "\n\n")))))
+(defun firestarter-report-to-buffer (process)
+  "Sets up and displays a reporting buffer.
+Process output, buffer name, return code and reporting type are
+all derived from PROCESS.  See also `firestarter-default-type'."
+  (let ((return-code (process-exit-status process))
+        (buffer-name (process-get process 'buffer-name))
+        (output (process-get process 'output))
+        (type (process-get process 'type)))
+    (unless (memq type '(silent nil))
+      (with-current-buffer (get-buffer-create firestarter-buffer-name)
+        (let ((inhibit-read-only t))
+          (view-mode)
+          (goto-char (point-max))
+          (insert (propertize
+                   (format "%s (%d):" buffer-name return-code)
+                   'face 'highlight)
+                  "\n\n"
+                  output
+                  "\n"
+                  (propertize "---" 'face 'shadow)
+                  "\n\n")))
+      (when (or (and (eq type 'success) (= return-code 0))
+                (and (eq type 'failure) (/= return-code 0))
+                (memq type '(finished t)))
+        (display-buffer firestarter-buffer-name)))))
 
 (defun firestarter ()
   "Hook function run after save.

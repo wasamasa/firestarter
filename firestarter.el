@@ -79,10 +79,6 @@ See `firestarter-default-type' for valid values.")
   "Process associated with current buffer.")
 (make-variable-buffer-local 'firestarter-process)
 
-(defvar firestarter-process-output ""
-  "Output associated with `firestarter-process'.")
-(make-variable-buffer-local 'firestarter-process-output)
-
 (defcustom firestarter-buffer-name "*firestarter*"
   "Buffer name of the reporting buffer for shell commands."
   :type 'string
@@ -100,15 +96,11 @@ Optionally, override the reporting type as documented in
           (start-process "firestarter" nil
                          shell-file-name shell-command-switch
                          (firestarter-format command)))
-    (setq firestarter-process-output "")
-    ;; if type is given, override firestarter-type, otherwise set it to
-    ;; the default if it's unset
-    (setq firestarter-type
-          (or type firestarter-type firestarter-default-type))
-    ;; KLUDGE process output filters aren't run with the buffer they
-    ;; originate from selected, that's why the buffer associated with
-    ;; the process is stored in a process property
-    (process-put firestarter-process 'buffer (current-buffer))
+    (process-put firestarter-process 'output "")
+    (process-put firestarter-process 'type
+                 (or type firestarter-type firestarter-default-type))
+    (process-put firestarter-process 'buffer-name
+                 (buffer-name (current-buffer)))
     (set-process-filter firestarter-process 'firestarter-filter)
     (set-process-sentinel firestarter-process 'firestarter-sentinel)))
 
@@ -150,48 +142,43 @@ Available format codes are:
 
 (defun firestarter-filter (process output)
   "Special process filter.
-It retrieves the associated buffer for PROCESS, then extends its
-value of `firestarter-process-output' with OUTPUT.  The reason
-for using a string instead of the default process filter and a
-buffer is due to buffers not being subject to garbage collection.
-Asides from that it is not possible to have a buffer-local
-buffer, a buffer-local string however is no problem."
-  (let ((buffer (process-get process 'buffer)))
-    (with-current-buffer buffer
-      (setq firestarter-process-output
-            (concat firestarter-process-output output)))))
+Appends OUTPUT to the process output property."
+  (process-put process 'output (concat (process-get process 'output) output)))
 
 (defun firestarter-sentinel (process _type)
   "Special process sentinel.
 It retrieves the status of PROCESS, then sets up and displays the
-reporting buffer according to `firestarter-type'."
-  (let ((buffer (process-get process 'buffer)))
-    (with-current-buffer buffer
-      (when (memq (process-status process) '(exit signal nil))
-        (unless (or (eq firestarter-type 'silent) (not firestarter-type))
-          (let ((return-code (process-exit-status process)))
-            (firestarter-setup-buffer process return-code)
-            (when (or (and (eq firestarter-type 'success) (= return-code 0))
-                      (and (eq firestarter-type 'failure) (/= return-code 0))
-                      (memq firestarter-type '(finished t)))
-              (display-buffer "*firestarter*"))))))))
+reporting buffer according to the reporting type."
+  (let ((type (process-get process 'type)))
+    (when (memq (process-status process) '(exit signal nil))
+      (unless (memq type '(silent nil))
+        (let ((return-code (process-exit-status process)))
+          (firestarter-setup-reporting-buffer process)
+          (when (or (and (eq type 'success) (= return-code 0))
+                    (and (eq type 'failure) (/= return-code 0))
+                    (memq type '(finished t)))
+            (display-buffer firestarter-buffer-name)))))))
 
-(defun firestarter-setup-buffer (process return-code)
+(defun firestarter-setup-reporting-buffer (process)
   "Setup the reporting buffer.
 Retrieve the associated buffer for PROCESS, then format its
 output and incorporate RETURN-CODE into the report."
-  (let ((buffer (process-get process 'buffer))
-        (target (get-buffer-create "*firestarter*"))
-        (output firestarter-process-output))
+  (let ((buffer-name (process-get process 'buffer-name))
+        (target (get-buffer-create firestarter-buffer-name))
+        (return-code (process-exit-status process))
+        (output (process-get process 'output)))
     (with-current-buffer target
       (let ((inhibit-read-only t))
         (view-mode)
         (goto-char (point-max))
         (insert (propertize
-                 (format "%s (%d):" (buffer-name buffer) return-code)
+                 (format "%s (%d):" buffer-name return-code)
                  'face 'highlight)
-                "\n\n" output "\n"
-                (propertize "---" 'face 'shadow) "\n\n")))))
+                "\n\n"
+                output
+                "\n"
+                (propertize "---" 'face 'shadow)
+                "\n\n")))))
 
 (defun firestarter ()
   "Hook function run after save.
@@ -206,10 +193,6 @@ It dispatches upon the value type of `firestarter'."
      ((listp firestarter)
       (eval firestarter))
      (t (error "Invalid value for `firestarter': %s" firestarter)))))
-
-(defadvice rename-buffer (after update-firestarter-process activate)
-  (when firestarter-process
-    (process-put firestarter-process 'buffer (buffer-name))))
 
 (defun firestarter-abort ()
   "Abort the currently active firestarter process."

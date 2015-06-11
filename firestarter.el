@@ -43,7 +43,8 @@
 (defcustom firestarter-lighter " 🔥"
   "Lighter for `firestarter-mode'."
   :type 'string
-  :group 'firestarter)
+  :group 'firestarter
+  :risky t)
 
 (defvar firestarter nil
   "Command to run on file save.

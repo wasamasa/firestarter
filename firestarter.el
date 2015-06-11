@@ -84,13 +84,14 @@ See `firestarter-default-type' for valid values.")
   :type 'string
   :group 'firestarter)
 
-(defcustom firestarter-reporting-functions '(firestarter-report-to-buffer)
+(defcustom firestarter-reporting-functions nil
   "Abnormal hook run after process termination.
 The process is used as argument.  See
 `firestarter-report-to-buffer' for the default value and as
 example for writing your own reporting function."
   :type 'hook
   :group 'firestarter)
+(add-hook 'firestarter-reporting-functions 'firestarter-report-to-buffer)
 
 (defcustom firestarter-reporting-format
   (concat (propertize "%b (%c):" 'face 'highlight)

@@ -92,6 +92,22 @@ example for writing your own reporting function."
   :type 'hook
   :group 'firestarter)
 
+(defcustom firestarter-reporting-format
+  (concat (propertize "%b (%c):" 'face 'highlight)
+          "\n\n%s\n"
+          (propertize "---" 'face 'shadow)
+          "\n\n")
+  "Format string for a single report item.
+Available format codes are:
+
+%b: Buffer name
+
+%c: Return code
+
+%s: Process output"
+  :type 'string
+  :group 'firestarter)
+
 (defun firestarter-command (command &optional type)
   "Execute COMMAND in a shell.
 Optionally, override the reporting type as documented in
@@ -173,14 +189,10 @@ all derived from PROCESS.  See also `firestarter-default-type'."
         (let ((inhibit-read-only t))
           (view-mode)
           (goto-char (point-max))
-          (insert (propertize
-                   (format "%s (%d):" buffer-name return-code)
-                   'face 'highlight)
-                  "\n\n"
-                  output
-                  "\n"
-                  (propertize "---" 'face 'shadow)
-                  "\n\n")))
+          (insert (format-spec firestarter-reporting-format
+                               (format-spec-make ?b buffer-name
+                                                 ?c return-code
+                                                 ?s output)))))
       (when (or (and (eq type 'success) (= return-code 0))
                 (and (eq type 'failure) (/= return-code 0))
                 (memq type '(finished t)))

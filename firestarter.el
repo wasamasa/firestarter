@@ -198,7 +198,9 @@ all derived from PROCESS.  See also `firestarter-default-type'."
       (when (or (and (eq type 'success) (= return-code 0))
                 (and (eq type 'failure) (/= return-code 0))
                 (memq type '(finished t)))
-        (display-buffer firestarter-buffer-name)))))
+        (let ((window (display-buffer firestarter-buffer-name)))
+          (when window
+            (set-window-point window (point-max))))))))
 
 (defun firestarter ()
   "Hook function run after save.

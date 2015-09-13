@@ -189,7 +189,7 @@ all derived from PROCESS.  See also `firestarter-default-type'."
     (unless (memq type '(silent nil))
       (with-current-buffer (get-buffer-create firestarter-buffer-name)
         (let ((inhibit-read-only t))
-          (view-mode)
+          (special-mode)
           (goto-char (point-max))
           (insert (format-spec firestarter-reporting-format
                                (format-spec-make ?b buffer-name

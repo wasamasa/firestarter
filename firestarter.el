@@ -40,12 +40,6 @@
   :group 'convenience
   :prefix "firestarter-")
 
-(defcustom firestarter-lighter " 🔥"
-  "Lighter for `firestarter-mode'."
-  :type 'string
-  :group 'firestarter
-  :risky t)
-
 (defvar firestarter nil
   "Command to run on file save.
 A string value is interpreted as shell command and passed to an
@@ -227,7 +221,6 @@ It dispatches upon the value type of `firestarter'."
   "Toggle `firestarter-mode'.
 When activated, run a command as specified in the buffer-local
 `firestarter' variable on every file save."
-  :lighter firestarter-lighter
   :global t
   (if firestarter-mode
       (add-hook 'after-save-hook 'firestarter)

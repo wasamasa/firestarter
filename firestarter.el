@@ -34,6 +34,7 @@
 ;;; Code:
 
 (require 'format-spec)
+(require 'ansi-color)
 
 (defgroup firestarter nil
   "Execute shell commands on save."
@@ -185,10 +186,12 @@ all derived from PROCESS.  See also `firestarter-default-type'."
         (let ((inhibit-read-only t))
           (special-mode)
           (goto-char (point-max))
-          (insert (format-spec firestarter-reporting-format
-                               (format-spec-make ?b buffer-name
-                                                 ?c return-code
-                                                 ?s output)))))
+          (insert
+           (ansi-color-apply
+            (format-spec firestarter-reporting-format
+                         (format-spec-make ?b buffer-name
+                                           ?c return-code
+                                           ?s output))))))
       (when (or (and (eq type 'success) (= return-code 0))
                 (and (eq type 'failure) (/= return-code 0))
                 (memq type '(finished t)))

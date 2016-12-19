@@ -4,7 +4,7 @@
 
 ;; Author: Vasilij Schneidermann <v.schneidermann@gmail.com>
 ;; URL: https://github.com/wasamasa/firestarter
-;; Version: 0.2.4
+;; Version: 0.2.5
 ;; Keywords: convenience
 
 ;; This file is NOT part of GNU Emacs.

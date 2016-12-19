@@ -180,7 +180,8 @@ all derived from PROCESS.  See also `firestarter-default-type'."
   (let ((return-code (process-exit-status process))
         (buffer-name (process-get process 'buffer-name))
         (output (process-get process 'output))
-        (type (process-get process 'type)))
+        (type (process-get process 'type))
+        end)
     (unless (memq type '(silent nil))
       (with-current-buffer (get-buffer-create firestarter-buffer-name)
         (let ((inhibit-read-only t))
@@ -191,13 +192,14 @@ all derived from PROCESS.  See also `firestarter-default-type'."
             (format-spec firestarter-reporting-format
                          (format-spec-make ?b buffer-name
                                            ?c return-code
-                                           ?s output))))))
+                                           ?s output))))
+          (setq end (point-max))))
       (when (or (and (eq type 'success) (= return-code 0))
                 (and (eq type 'failure) (/= return-code 0))
                 (memq type '(finished t)))
         (let ((window (display-buffer firestarter-buffer-name)))
           (when window
-            (set-window-point window (point-max))))))))
+            (set-window-point window end)))))))
 
 (defun firestarter ()
   "Hook function run after save.

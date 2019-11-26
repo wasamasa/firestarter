@@ -224,5 +224,5 @@ convinced me:
   away with the most glaring problem of ``M-x compile``, not being
   re-run on save, but shares its other issues
 - `previewing-mode <https://github.com/crowding/previewing-mode>`_
-  targets a similiar problem, but has lots of overlap with this mode,
+  targets a similar problem, but has lots of overlap with this mode,
   perhaps it's got ideas worth stealing.

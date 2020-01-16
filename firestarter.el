@@ -222,6 +222,12 @@ It dispatches upon the value type of `firestarter'."
     (delete-process firestarter-process)))
 
 ;;;###autoload
+(defun firestarter-set-function (fname)
+  "Set function on the firestarter variable."
+  (interactive "aWhich function: ")
+  (setq firestarter fname))
+
+;;;###autoload
 (define-minor-mode firestarter-mode
   "Toggle `firestarter-mode'.
 When activated, run a command as specified in the buffer-local

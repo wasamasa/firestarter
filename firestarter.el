@@ -66,6 +66,11 @@ t, 'finished: Report after either outcome once the subprocess quit."
                  (const :tag "Finished" finished))
   :group 'firestarter)
 
+(defcustom firestarter-auto-kill nil
+  "Non-nil to kill current process automatically when starting anew"
+  :type 'boolean
+  :group 'firestarter)
+
 (defvar firestarter-type nil
   "Current shell command reporting type.
 See `firestarter-default-type' for valid values.")
@@ -105,25 +110,34 @@ Available format codes are:
   :type 'string
   :group 'firestarter)
 
+(defun firestarter-process-running-p ()
+  "Return non-nil if a process is currently running."
+  (and firestarter-process
+       (not (memq (process-status firestarter-process)
+                  '(exit signal nil)))))
+
 (defun firestarter-command (command &optional type)
   "Execute COMMAND in a shell.
 Optionally, override the reporting type as documented in
 `firestarter-default-type' with TYPE."
-  (if (and firestarter-process
-           (not (memq (process-status firestarter-process)
-                      '(exit signal nil))))
-      (error "Process already running")
-    (setq firestarter-process
-          (start-process "firestarter" nil
-                         shell-file-name shell-command-switch
-                         (firestarter-format command)))
-    (process-put firestarter-process 'output "")
-    (process-put firestarter-process 'type
-                 (or type firestarter-type firestarter-default-type))
-    (process-put firestarter-process 'buffer-name
-                 (buffer-name (current-buffer)))
-    (set-process-filter firestarter-process 'firestarter-filter)
-    (set-process-sentinel firestarter-process 'firestarter-sentinel)))
+  (let ((should-start
+         (or (not (firestarter-process-running-p))
+             (when firestarter-auto-kill
+               (message "Killing the current process") t)
+             (y-or-n-p "Kill current process to start a new one? "))))
+    (when should-start
+      (firestarter-abort)
+      (setq firestarter-process
+            (start-process "firestarter" nil
+                           shell-file-name shell-command-switch
+                           (firestarter-format command)))
+      (process-put firestarter-process 'output "")
+      (process-put firestarter-process 'type
+                   (or type firestarter-type firestarter-default-type))
+      (process-put firestarter-process 'buffer-name
+                   (buffer-name (current-buffer)))
+      (set-process-filter firestarter-process 'firestarter-filter)
+      (set-process-sentinel firestarter-process 'firestarter-sentinel))))
 
 (defun firestarter-format (string)
   "Apply format codes on STRING.
